@@ -1,0 +1,212 @@
+openapi: 3.0.0
+info:
+  title: My Friend API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+paths:
+  /users:
+    post:
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    get:
+      summary: Get a list of all registered users
+      operationId: getAllUsers
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+  /users/{userId}/friend-requests:
+    post:
+      summary: Send a friend request to another user
+      operationId: sendFriendRequest
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user sending the request
+          required: true
+          schema:
+            type: string
+        - name: friendId
+          in: query
+          description: ID of the user receiving the request
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+    get:
+      summary: Get a list of incoming friend requests for a user
+      operationId: getIncomingFriendRequests
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user whose requests to get
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FriendRequest"
+  /users/{userId}/friend-requests/{requestId}:
+    put:
+      summary: Accept or reject a friend request
+      operationId: acceptOrRejectFriendRequest
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user receiving the request
+          required: true
+          schema:
+            type: string
+        - name: requestId
+          in: path
+          description: ID of the friend request to accept or reject
+          required: true
+          schema:
+            type: string
+        - name: accept
+          in: query
+          description: Whether to accept the request (true) or reject it (false)
+          required: true
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: OK
+    delete:
+      summary: Cancel a friend request
+      operationId: cancelFriendRequest
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user sending or receiving the request
+          required: true
+          schema:
+            type: string
+        - name: requestId
+          in: path
+          description: ID of the friend request to cancel
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  /users/{userId}/friends:
+    get:
+      summary: Get a list of friends for a user
+      operationId: getFriendsList
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user whose friends to get
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+  /users/{userId}/friends/{friendId}:
+    get:
+      summary: Get the status of the friendship between two users
+      operationId: getFriendshipStatus
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the first user
+          required: true
+          schema:
+            type: string
+        - name: friendId
+          in: path
+          description: ID of the second user
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FriendshipStatus"
+    delete:
+      summary: Remove a friend from a user's friends list
+      operationId: removeFriend
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user whose friend to remove
+          required: true
+          schema:
+            type: string
+        - name: friendId
+          in: path
+          description: ID of the friend to remove
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+      - id
+      - name
+    FriendRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        senderId:
+          type: string
+        receiverId:
+          type: string
+      required:
+      - id
+      - senderId
+      - receiverId
+    FriendshipStatus:
+      type: string
+      enum: ["none", "outgoing", "incoming", "friends"]
